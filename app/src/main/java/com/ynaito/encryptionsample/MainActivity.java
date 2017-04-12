@@ -19,13 +19,20 @@ public class MainActivity extends AppCompatActivity {
 
         final EditText editText = (EditText) findViewById(R.id.editText);
         Button EncButton = (Button) findViewById(R.id.encryptButton);
-        final TextView textView = (TextView) findViewById(R.id.text);
+        final TextView textEncView = (TextView) findViewById(R.id.textEnc);
+        final TextView textDecView = (TextView) findViewById(R.id.textDec);
         EncButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //Encryption
                 String EncText = editText.getText().toString();
                 String EncedText = EncryptionUtil.encryptAES(AES_KEY,EncText);
-                textView.setText(EncedText);
+                textEncView.setText(EncedText);
+
+                //Decryption
+                String DecText = textEncView.getText().toString();
+                String DecedText = EncryptionUtil.decryptAES(AES_KEY,DecText);
+                textDecView.setText(DecedText);
             }
         });
 
