@@ -15,21 +15,23 @@ import android.widget.TextView;
 public class MainActivity extends AppCompatActivity {
 
     private String TAG = MainActivity.class.getSimpleName();
-    private Context mContext;
+    private byte[] mSalt;
+    public final static String PREFERENCE_ID = "hogehoge";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mContext = this;
-
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(this);
-        if (sp.getString(EncryptionUtil.PREFERENCE_ID, null) == null) {
+        if (sp.getString(PREFERENCE_ID, null) == null) {
             Log.d(TAG, "Encrypt key is null. Generate EncryptKey");
             //乱数を生成
             byte[] salt = EncryptionUtil.generateKey();
-            sp.edit().putString(EncryptionUtil.PREFERENCE_ID, salt.toString()).commit();
+            sp.edit().putString(PREFERENCE_ID, salt.toString()).commit();
+            mSalt = salt;
+        } else {
+            mSalt = sp.getString(PREFERENCE_ID, null).getBytes();
         }
 
         final EditText editText = (EditText) findViewById(R.id.editText);
@@ -40,27 +42,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 //Encryption
-                String EncText = editText.getText().toString();
-                String EncedText = EncryptionUtil.encryptAES(mContext, EncText);
-                textEncView.setText(EncedText);
+                byte[] EncText = editText.getText().toString().getBytes();
+                byte[] EncedText = EncryptionUtil.encryptAES(mSalt, EncText);
+                Log.d(TAG,"encrypted : " + EncryptionUtil.byteToString(EncedText));
+                textEncView.setText(EncryptionUtil.byteToString(EncedText));
 
                 //Decryption
-                String DecText = textEncView.getText().toString();
-                String DecedText = EncryptionUtil.decryptAES(mContext, DecText);
-                textDecView.setText(DecedText);
+                byte[] DecText = EncryptionUtil.StringToByte(textEncView.getText().toString());
+                byte[] DecedText = EncryptionUtil.decryptAES(mSalt, DecText);
+                textDecView.setText(new String(DecedText));
             }
         });
 
     }
 }
-
-
-//        try {
-//            KeyGenerator generator = KeyGenerator.getInstance("AES");
-//            SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-//            generator.init(ENCRYPT_KEY_LENGTH, random);
-//            return generator.generateKey();
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
 
